@@ -4,19 +4,66 @@ class FileLinkedList {
         FileLinkedList<T> operator=(const FileLinkedList<T> &that) = delete;
 
         // TODO - Your private data.
+        struct Node {
+            T data;
+            int prev;
+            int next;
+        };
+        Node sentinel;
+        FILE *file;
+
         // TODO - Private helper functions. (Maybe file IO with an index.)
+
+        static int readPrev(int node, FILE *f) {
+            int tmp;
+            fseek(f, node+sizeof(T), SEEK_SET);
+            fread(&tmp, sizeof(int), 1, f);
+            return tmp;
+        }
+        static int readNext(int node, FILE *f) {    //node is just the address
+            int tmp;
+            fseek(f, node+sizeof(T)+sizeof(int), SEEK_SET);
+            fread(&tmp, sizeof(int), 1, f);
+            return tmp;
+        }
+        static T readData(int node, FILE *f) {
+            T tmp;
+            fseek(f, node, SEEK_SET);
+            fread(&tmp, sizeof(T), 1, f);
+            return tmp;
+        }
+        
     public:
         typedef T value_type;
 
         class const_iterator {
                 // TODO - Your private data.
+                int node;
+                FILE *file;
             public:
-                const_iterator(int i,FILE *f);
-                const_iterator(const const_iterator &i);
-                T operator*();
-                bool operator==(const const_iterator &i) const;
-                bool operator!=(const const_iterator &i) const;
-                const_iterator &operator=(const const_iterator &i);
+                const_iterator(int i,FILE *f) {
+                    node = i;
+                    file = f;
+                }
+                const_iterator(const const_iterator &i) {
+                    node = i.node;
+                    file = i.file;
+                }
+                T operator*() {
+                    T ret;
+                    ret = readData(node, file);
+                    return ret;
+                }
+                bool operator==(const const_iterator &i) const {
+                    return node == i.node;
+                }
+                bool operator!=(const const_iterator &i) const {
+                    return node != i.node;
+                }
+                const_iterator &operator=(const const_iterator &i) {
+                    node = i.node;
+                    file = i.file;
+                }
                 const_iterator &operator++();
                 const_iterator &operator--();
                 const_iterator operator++(int);
@@ -26,7 +73,12 @@ class FileLinkedList {
         };
 
         // General Methods
-        FileLinkedList(const std::string &fname);
+        FileLinkedList(const std::string &fname) {
+            file = fopen(fname.c_str(), "w+");
+            sentinel = new Node;
+            sentinel.prev = sentinel;
+            sentinel.next = sentinel;
+        }
 
         template<typename I>  // The type I will be an iterator.
         FileLinkedList(I begin,I end,const std::string &fname) {
