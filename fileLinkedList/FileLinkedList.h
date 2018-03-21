@@ -15,27 +15,27 @@ class FileLinkedList {
 
         // TODO - Private helper functions. (Maybe file IO with an index.)
 
-        static int readPrev(int node, FILE *f) {
+        static int readPrev(int nodeptr, FILE *f) {
             int tmp;
-            fseek(f, node+sizeof(T), SEEK_SET);
+            fseek(f, nodeptr+sizeof(T), SEEK_SET);
             fread(&tmp, sizeof(int), 1, f);
             return tmp;
         }
-        static int readNext(int node, FILE *f) {    //node is just the address
+        static int readNext(int nodeptr, FILE *f) {    //node is just the address
             int tmp;
-            fseek(f, node+sizeof(T)+sizeof(int), SEEK_SET);
+            fseek(f, nodeptr+sizeof(T)+sizeof(int), SEEK_SET);
             fread(&tmp, sizeof(int), 1, f);
             return tmp;
         }
-        static T readData(int node, FILE *f) {
+        static T readData(int nodeptr, FILE *f) {
             T tmp;
-            fseek(f, node, SEEK_SET);
+            fseek(f, nodeptr, SEEK_SET);
             fread(&tmp, sizeof(T), 1, f);
             return tmp;
         }
-        static void writeData(int node, FILE *f) {
-            fseek(f, node, SEEK_SET);
-            fwrite(&node, sizeof(T), 1, f);     //?? look up on Cpluspluss
+        static void writeData(int nodeptr, FILE *f) {
+            fseek(f, nodeptr, SEEK_SET);
+            fwrite(&nodeptr, sizeof(T), 1, f);
         }
         
     public:
@@ -43,50 +43,50 @@ class FileLinkedList {
 
         class const_iterator {
                 // TODO - Your private data.
-                int node;
+                int nodeptr;
                 FILE *file;
             public:
                 const_iterator(int i,FILE *f) {
-                    node = i;
+                    nodeptr = i;
                     file = f;
                 }
                 const_iterator(const const_iterator &i) {
-                    node = i.node;
+                    nodeptr = i.nodeptr;
                     file = i.file;
                 }
                 T operator*() {
                     T ret;
-                    ret = readData(node, file);
+                    ret = readData(nodeptr, file);
                     return ret;
                 }
                 bool operator==(const const_iterator &i) const {
-                    return node == i.node;
+                    return nodeptr == i.nodeptr;
                 }
                 bool operator!=(const const_iterator &i) const {
-                    return node != i.node;
+                    return nodeptr != i.nodeptr;
                 }
                 const_iterator &operator=(const const_iterator &i) {
-                    node = i.node;
+                    nodeptr = i.nodeptr;
                     file = i.file;
                 }
                 const_iterator &operator++() {
-                    auto next = readNext(node, file);
-                    node = next;
+                    auto next = readNext(nodeptr, file);
+                    nodeptr = next;
                     return *this;
                 }
                 const_iterator &operator--() {
-                    auto prev = readPrev(node, file);
-                    node = prev;
+                    auto prev = readPrev(nodeptr, file);
+                    nodeptr = prev;
                     return *this;
                 }
                 const_iterator operator++(int) {//I don't remember which one of
-                    auto next = readNext(node, file);
-                    node = next;
+                    auto next = readNext(nodeptr, file);
+                    nodeptr = next;
                     return *this;
                 }
                 const_iterator operator--(int) {//these was pre and post
-                    auto prev = readPrev(node, file);
-                    node = prev;
+                    auto prev = readPrev(nodeptr, file);
+                    nodeptr = prev;
                     return *this;
                 }
                                                 //...or even which does what...
@@ -96,7 +96,7 @@ class FileLinkedList {
         // General Methods
         FileLinkedList(const std::string &fname) {
             file = fopen(fname.c_str(), "w+");
-            sentinel = new Node;
+            //sentinel = new Node;
             sentinel.prev = &sentinel;
             sentinel.next = &sentinel;
             freelist = -1;
