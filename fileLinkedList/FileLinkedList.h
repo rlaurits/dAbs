@@ -11,6 +11,7 @@ class FileLinkedList {
         };
         Node sentinel;
         FILE *file;
+        int freelist;
 
         // TODO - Private helper functions. (Maybe file IO with an index.)
 
@@ -31,6 +32,10 @@ class FileLinkedList {
             fseek(f, node, SEEK_SET);
             fread(&tmp, sizeof(T), 1, f);
             return tmp;
+        }
+        static void writeData(int node, FILE *f) {
+            fseek(f, node, SEEK_SET);
+            fwrite(&node, sizeof(T), 1, f);     //?? look up on Cpluspluss
         }
         
     public:
@@ -64,11 +69,27 @@ class FileLinkedList {
                     node = i.node;
                     file = i.file;
                 }
-                const_iterator &operator++();
-                const_iterator &operator--();
-                const_iterator operator++(int);
-                const_iterator operator--(int);
-
+                const_iterator &operator++() {
+                    auto next = readNext(node, file);
+                    node = next;
+                    return *this;
+                }
+                const_iterator &operator--() {
+                    auto prev = readPrev(node, file);
+                    node = prev;
+                    return *this;
+                }
+                const_iterator operator++(int) {//I don't remember which one of
+                    auto next = readNext(node, file);
+                    node = next;
+                    return *this;
+                }
+                const_iterator operator--(int) {//these was pre and post
+                    auto prev = readPrev(node, file);
+                    node = prev;
+                    return *this;
+                }
+                                                //...or even which does what...
                 friend class FileLinkedList;
         };
 
@@ -76,8 +97,9 @@ class FileLinkedList {
         FileLinkedList(const std::string &fname) {
             file = fopen(fname.c_str(), "w+");
             sentinel = new Node;
-            sentinel.prev = sentinel;
-            sentinel.next = sentinel;
+            sentinel.prev = &sentinel;
+            sentinel.next = &sentinel;
+            freelist = -1;
         }
 
         template<typename I>  // The type I will be an iterator.
@@ -99,10 +121,28 @@ class FileLinkedList {
         void set(const T &value,int index);
         void set(const T &value,const_iterator position);
 
-        const_iterator begin();
-        const_iterator begin() const;
-        const_iterator end();
-        const_iterator end() const;
-        const_iterator cbegin() const;
-        const_iterator cend() const;
+        const_iterator begin() {
+            auto iter = new const_iterator(sentinel.next, file);
+            return iter;
+        }
+        const_iterator begin() const {
+            auto iter = new const_iterator(sentinel.next, file);
+            return iter;
+        }
+        const_iterator end() {
+            auto iter = new const_iterator(sentinel, file);
+            return iter;
+        }
+        const_iterator end() const {
+            auto iter = new const_iterator(sentinel, file);
+            return iter;
+        }
+        const_iterator cbegin() const {
+            auto iter = new const_iterator(sentinel.next, file);
+            return iter;
+        }
+        const_iterator cend() const {
+            auto iter = new const_iterator(sentinel, file);
+            return iter;
+        }
 };

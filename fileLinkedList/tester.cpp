@@ -5,10 +5,10 @@
 using namespace std;
 
 int main() {
-    FileLinkedList<int> *fll = FileLinkedList<T>("testFile.txt");
+    FileLinkedList<int> *fll = &FileLinkedList<int>("testFile.txt");
     
 
-    for(x:fll) {
-        cout<<x<<'\n';
+    for(fll-> const_iterator iter = fll-> begin; iter != fll-> end; ++iter) {
+        cout<<*iter<<'\n';
     }
 }
