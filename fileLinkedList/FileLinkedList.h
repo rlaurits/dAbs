@@ -22,7 +22,7 @@ class FileLinkedList {
         //  |sz||freelist||sentinel||...nodes...|    //
         int sz;
         int freelist;
-        int sentinel = sizeof(int);
+        int sentinel = 2*sizeof(int);
         int nodeSZ = 2*sizeof(int) + sizeof(T);
         FILE *file;
         
@@ -150,9 +150,8 @@ class FileLinkedList {
                 freelist = readFL(file);
             } else {
                 file = fopen(fname.c_str(), "w+");
-                //sentinel = new Node;
-                //sentinel.prev = sizeof(int);
-                //sentinel.next = sizeof(int);
+                writePrev(sentinel, sentinel, file);
+                writeNext(sentinel, sentinel, file);
                 sz = 0;
                 freelist = -1;
                 updateSZ(sz);
@@ -173,13 +172,13 @@ class FileLinkedList {
         void push_back(const T &t) { insert(--end(), t); }
         void pop_back() { erase(--end()); }
         int size() const { return sz; }
-        void clear() { while (size()>0) pop_back(); }
+         void clear() { while (size()>0) pop_back(); }
 
         const_iterator insert(const_iterator position, const T &t) {
             auto pos = position.nodeptr;
             int newnode = -1;
             if(freelist == -1) {
-                newnode = 2*sizeof(int) + nodeSZ + sz*nodeSZ;
+            newnode = 2*sizeof(int) + nodeSZ + sz*nodeSZ;
             } else {
                 int newhead = readNext(freelist, file);
                 newnode = freelist;
@@ -202,7 +201,21 @@ class FileLinkedList {
             for(int i = 0; i < index; ++i) ++iter;
             return *iter;
         }
-        const_iterator erase(const_iterator position);
+        const_iterator erase(const_iterator position) {
+            auto pos = position.nodeptr;
+            // - adjusting pointers
+            writeNext(readPrev(pos, file), readNext(pos, file), file);
+            writePrev(readNext(pos, file), readPrev(pos, file), file);
+
+            // - adding pos to the freelist
+            auto tmp = readNext(pos, file);
+            writeNext(pos, freelist, file);
+            freelist = pos;
+            --sz;
+            updateSZ(sz);
+
+            return const_iterator(tmp, file);
+        }
         void set(const T &value,int index);
         void set(const T &value,const_iterator position);
 
