@@ -1,10 +1,16 @@
+#include <string>
+#include <vector>
+using namespace std;
+
 template<typename K,typename V,typename Hash>
 class HashMap {
     Hash hashFunction;
     // Data to store the hash table and the number of elements.
+
+    int sz;
     
     // Suggestion for the hash table: either
-    // vector<vector<pair<K,V>>> table;
+    vector<vector<pair<K,V>>> table;
     // or
     // vector<list<pair<K,V>>> table;
     // would work well for the chaining approach. 
@@ -127,7 +133,12 @@ public:
 
     iterator erase(const_iterator position);
 
-    int erase(const key_type& k);
+    int erase(const key_type& k) {
+        const_iterator iter = find(k);
+        if(iter == cend()) return 0;
+        erase(iter);
+        return 1;
+    }
 
     void clear();
 
