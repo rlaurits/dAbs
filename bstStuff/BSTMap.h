@@ -2,15 +2,13 @@
 
 template<typename K,typename V>
 class BSTMap {
-    // TODO: Define your Node
 	struct Node {
 	Node *left;
 	Node *right;
     Node *parent;
-    //std::pair<K,V> data;
+    std::pair<K,V> data;
 };
 
-    // TODO: specify whatever member data you need.
     int sz;
     Node *root;
 
@@ -22,17 +20,9 @@ public:
     class const_iterator;
 
     class iterator {
-        // TODO: Iterator data. 
+         
         Node *ptr;
 
-        //Need to be able to go back from end, i.e. --end() should 
-        //give last element.
-        //One approach is to keep a Node* and a bool that tells me if 
-        //it is at end.
-        //If just keeping Node* and use nullptr to indicate end(), then
-        //operator-- need a case for nullptr, in which case to get the 
-        //maximum element. But to get the maximum element, we need to 
-        //store information about the tree, e.g. the root pointer, as member.
     public:
         friend class const_iterator;
         iterator(Node *nd) {
@@ -49,24 +39,39 @@ public:
             while(ptr-> left != nullptr) {
                 *ptr = ptr-> left;
             }
+            return *this;
         }
         iterator farRight() {
             while(ptr-> right != nullptr) {
                 *ptr = ptr-> right;
             }
+            return *this;
         }
-        
+
         bool operator==(const iterator &i) const { return *ptr == i-> ptr; }
         bool operator!=(const iterator &i) const { return !(*this==i); }
-        std::pair<K,V> &operator*() { return *ptr; }
+        std::pair<K,V> &operator*() { return ptr-> data; }
+        //prefix
         iterator &operator++() {
-            //TODO
+            if(ptr != nullptr) {
+                ptr = ptr-> right;
+            }
+            this-> farLeft();
             return *this;
         }
         iterator &operator--() {
-            // TODO
+            if(ptr == nullptr) {
+                iterator iter(root);
+                iter-> farRight();
+                return iter;
+            }
+            if(ptr-> left != nullptr) {
+                ptr = ptr-> left;
+            }
+            this-> farRight();
             return *this;
         }
+        //postfix
         iterator operator++(int) {
             iterator tmp(*this);
             ++(*this);
@@ -80,22 +85,53 @@ public:
     };
 
     class const_iterator {
-        // TODO: iterator data
+        Node *ptr;
+                        
     public:
         friend class BSTMap<K,V>;  // You might not need this in your code, but it helped me.
-        const_iterator(/*TODO*/)/*:...*/ { /*TODO*/ }
-        // TODO: Other constructors as needed.
-        const_iterator(const iterator &iter)/*:...*/ {}
+        const_iterator(const Node *nd) {
+            
+        }
+        const_iterator(const const_iterator &iter) {
+            ptr = iter.ptr;
+        }
+        const_iterator(const iterator &iter) {
+            ptr = iter.ptr;
+        }
 
-        bool operator==(const const_iterator &i) const { /*TODO*/ }
-        bool operator!=(const const_iterator &i) const { /*TODO*/ }
-        const std::pair<K,V> &operator*() { /*TODO*/ }
+        const_iterator farLeft() {
+            while(ptr-> left!= nullptr) {
+                ptr = ptr-> left;
+            }
+            return *this;
+        }
+        const_iterator farRight() {
+            while(ptr-> right != nullptr) {
+                ptr = ptr-> right;
+            }
+            return *this;
+        }
+
+        bool operator==(const const_iterator &i) const { return *ptr == i-> ptr;}
+        bool operator!=(const const_iterator &i) const { return *this != i; }
+        const std::pair<K,V> &operator*() { return ptr-> data;}
         const_iterator &operator++() {
-            // TODO
+            if(ptr != nullptr) {
+                ptr = ptr-> right;
+            }
+            this-> farRight();
             return *this;
         }
         const_iterator &operator--() {
-            // TODO
+            if(ptr == nullptr) {
+                const_iterator iter(root);
+                iter-> farRight();
+                return iter;
+            }
+            if(ptr-> left != nullptr) {
+                ptr = ptr-> left;
+            }
+            this-> farLeft();
             return *this;
         }
         const_iterator operator++(int) {
@@ -129,18 +165,58 @@ public:
 
     bool empty() const { return size() == 0; }
 
-    unsigned size() const { /*TODO*/ }
+    unsigned size() const { return sz; }
 
-    iterator find(const key_type& k);
+    iterator find(const key_type& k) {
+        for(iterator iter = begin(); iter != end(); ++iter) {
+            if(iter.ptr-> data.first == k) {
+                return iter;
+            }
+        }
+        iterator iter = end();
+        return iter;
+    }
 
-    const_iterator find(const key_type& k) const;
+    const_iterator find(const key_type& k) const {
+        iterator iter = find(k);
+        return const_iterator(iter);
+    }
 
     unsigned int count(const key_type& k) const { 
         if(find(k)!=cend()) return 1;
         else return 0;
     }
 
-    std::pair<iterator,bool> insert(const value_type& val);
+    std::pair<iterator,bool> insert(const value_type& val) {
+        if(find(val.first) != end()) {
+            return std::make_pair(end(), false);
+        } else {
+            Node newnode;
+            newnode.data = val;
+            iterator pos(root);
+            while(pos != --end()) {
+                if(val.second < (*pos).second) {
+                    if(pos != pos.farLeft()) {
+                        --pos;
+                    } else {
+                        //I don't understand how to assign newnode's parent
+                        //pointer without referring to the private val ptr
+                        newnode.parent = pos.ptr;
+                        newnode.parent-> left = &newnode;
+                        return std::make_pair(--pos, true);
+                    }
+                } else {
+                    if(pos != pos.farRight()) {
+                        ++pos;
+                    } else {
+                        newnode.parent = pos.ptr;
+                        newnode.parent-> right = &newnode;
+                        return std::make_pair(++pos, true);
+                    }
+                }
+            }
+        }
+    }
 
     template <class InputIterator>
     void insert(InputIterator first, InputIterator last) {
@@ -150,6 +226,7 @@ public:
     }
 
     iterator erase(const_iterator position);
+        
 
     unsigned int erase(const key_type& k){
         const_iterator it = find(k);
@@ -162,7 +239,11 @@ public:
         }
     }
 
-    void clear();
+    void clear() {
+        while(sz > 0) {
+            erase(cbegin());
+        }
+    }
 
     mapped_type &operator[](const K &key){
         return (*insert(make_pair(key, V())).first).second;
@@ -170,18 +251,30 @@ public:
 
     bool operator==(const BSTMap<K,V>& rhs) const;
 
-    bool operator!=(const BSTMap<K,V>& rhs) const { return ! (*this == rhs); }
+    bool operator!=(const BSTMap<K,V>& rhs) const { 
+        return ! (*this == rhs); 
+    }
 
-    iterator begin() { return iterator(/*TODO*/); }
+    iterator begin() { return iterator(root).farLeft; }
 
-    const_iterator begin() const { return const_iterator(/*TODO*/); }
+    const_iterator begin() const { 
+        return const_iterator(root).farLeft; 
+    }
 
-    iterator end() { return iterator(/*TODO*/); }
+    iterator end() {
+        return iterator(root).farRight();
+    }
 
-    const_iterator end() const { return const_iterator(/*TODO*/); }
+    const_iterator end() const {
+        return const_iterator(root).farRight();
+    }
 
-    const_iterator cbegin() const { return const_iterator(/*TODO*/); }
+    const_iterator cbegin() const {
+        return const_iterator(root).farLeft(); 
+    }
 
-    const_iterator cend() const { return const_iterator(/*TODO*/); }
+    const_iterator cend() const {
+        return const_iterator(root).farRight();
+    }
 
 };
