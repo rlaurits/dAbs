@@ -1,4 +1,7 @@
 #include <utility>
+#include <iostream>
+#include <cstdio>
+using namespace std;
 
 template<typename K,typename V>
 class BSTMap {
@@ -25,6 +28,7 @@ public:
 
     public:
         friend class const_iterator;
+        friend class BSTMap<K,V>;
         iterator(Node *nd) {
             ptr = nd;
         }
@@ -37,18 +41,18 @@ public:
 
         iterator farLeft() {
             while(ptr-> left != nullptr) {
-                *ptr = ptr-> left;
+                ptr = ptr-> left;
             }
             return *this;
         }
         iterator farRight() {
             while(ptr-> right != nullptr) {
-                *ptr = ptr-> right;
+                ptr = ptr-> right;
             }
             return *this;
         }
 
-        bool operator==(const iterator &i) const { return *ptr == i-> ptr; }
+        bool operator==(const iterator &i) const { return ptr == i.ptr; }
         bool operator!=(const iterator &i) const { return !(*this==i); }
         std::pair<K,V> &operator*() { return ptr-> data; }
         //prefix
@@ -165,7 +169,10 @@ public:
 
     bool empty() const { return size() == 0; }
 
-    unsigned size() const { return sz; }
+    unsigned size() const { 
+        cout<<"TESTING\n";
+        return sz; 
+    }
 
     iterator find(const key_type& k) {
         for(iterator iter = begin(); iter != end(); ++iter) {
@@ -187,36 +194,57 @@ public:
         else return 0;
     }
 
+        // - finds the place k belongs in the tree, returns a ptr to
+        //   the parent it needs to be inserted under - //
+    Node *descend(Node *nd, const key_type &k) {
+        //if(k < nd-> data.first && nd-> left == nullptr) return nd;
+        //if(k > nd-> data.first && nd-> right == nullptr) return nd;
+
+        //if(k < nd-> data.first) descend
+        
+        cout<<"testing1\n";
+        if(k < nd-> data.first) {
+            if(nd-> left == nullptr) {
+                return nd;
+            } else {
+                cout<<"testing2\n";
+                return descend(nd-> left, k);
+            }
+        } else {
+            if(nd-> right == nullptr) {
+                return nd;
+            } else {
+                return descend(nd-> right, k);
+            }
+        }
+        
+    }
+
     std::pair<iterator,bool> insert(const value_type& val) {
         if(find(val.first) != end()) {
-            return std::make_pair(end(), false);
+            return std::make_pair(find(val.first), false);
         } else {
-            Node newnode;
-            newnode.data = val;
-            iterator pos(root);
-            while(pos != --end()) {
-                if(val.second < (*pos).second) {
-                    if(pos != pos.farLeft()) {
-                        --pos;
-                    } else {
-                        //I don't understand how to assign newnode's parent
-                        //pointer without referring to the private val ptr
-                        newnode.parent = pos.ptr;
-                        newnode.parent-> left = &newnode;
-                        return std::make_pair(--pos, true);
-                    }
-                } else {
-                    if(pos != pos.farRight()) {
-                        ++pos;
-                    } else {
-                        newnode.parent = pos.ptr;
-                        newnode.parent-> right = &newnode;
-                        return std::make_pair(++pos, true);
-                    }
-                }
+            cout<<"testingA\n";
+            Node *newnode = new Node;
+            newnode-> data = val;
+            newnode-> left = nullptr;
+            newnode-> right = nullptr;
+            cout<<"testingB\n";
+            Node *prnt = descend(root, val.first);
+            cout<<"testingC\n";
+            newnode-> parent = prnt;
+            if(newnode-> data.first < prnt-> data.first) {
+                prnt-> left = newnode;
+                return std::make_pair(iterator(newnode), true);
+            } else {
+                prnt-> right = newnode;
+                return std::make_pair(iterator(newnode), true);
             }
         }
     }
+
+    
+    
 
     template <class InputIterator>
     void insert(InputIterator first, InputIterator last) {
@@ -255,10 +283,10 @@ public:
         return ! (*this == rhs); 
     }
 
-    iterator begin() { return iterator(root).farLeft; }
+    iterator begin() { return iterator(root).farLeft(); }
 
     const_iterator begin() const { 
-        return const_iterator(root).farLeft; 
+        return const_iterator(root).farLeft(); 
     }
 
     iterator end() {
