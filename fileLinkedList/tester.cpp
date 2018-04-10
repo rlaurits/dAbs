@@ -13,7 +13,7 @@ int main() {
     for(int i = 1; i <= 4; ++i) {
         fll-> push_back(i);
         cout<<"sz: "<<fll-> size()<<'\n';
-        //cout<<i<<'\n';
+        
     }
     fll-> push_back(10);
 
@@ -22,11 +22,5 @@ int main() {
     for(auto iter = fll-> begin(); iter != fll-> end(); ++iter) {
         cout<<*iter<<'\n';
     }
-    /*
-    cout<<"stage 2 tesgigngahb\n";
-
-    for(int i = 0; i < 5; ++i) {
-        cout<<"i: "<<i<<" val: "<<(*fll)[i]<<'\n';
-    }*/
     
 }
