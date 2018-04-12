@@ -6,11 +6,11 @@ using namespace std;
 template<typename K,typename V>
 class BSTMap {
 	struct Node {
-	Node *left;
-	Node *right;
-    Node *parent;
-    std::pair<K,V> data;
-};
+	    Node *left;
+	    Node *right;
+        Node *parent;
+        std::pair<K,V> data;
+    };
 
     int sz;
     Node *root;
@@ -40,16 +40,24 @@ public:
         }
 
         iterator farLeft() {
-            while(ptr-> left != nullptr) {
-                ptr = ptr-> left;
+            if(ptr == nullptr) {
+                return *this;
+            } else {
+                while(ptr-> left != nullptr) {
+                    ptr = ptr-> left;
+                }
+                return *this;
             }
-            return *this;
         }
         iterator farRight() {
-            while(ptr-> right != nullptr) {
-                ptr = ptr-> right;
+            if(ptr == nullptr) {
+                return *this;
+            } else {
+                while(ptr-> right != nullptr) {
+                    ptr = ptr-> right;
+                }
+                return *this;
             }
-            return *this;
         }
 
         bool operator==(const iterator &i) const { return ptr == i.ptr; }
@@ -197,17 +205,10 @@ public:
         // - finds the place k belongs in the tree, returns a ptr to
         //   the parent it needs to be inserted under - //
     Node *descend(Node *nd, const key_type &k) {
-        //if(k < nd-> data.first && nd-> left == nullptr) return nd;
-        //if(k > nd-> data.first && nd-> right == nullptr) return nd;
-
-        //if(k < nd-> data.first) descend
-        
-        cout<<"testing1\n";
         if(k < nd-> data.first) {
             if(nd-> left == nullptr) {
                 return nd;
             } else {
-                cout<<"testing2\n";
                 return descend(nd-> left, k);
             }
         } else {
@@ -221,23 +222,34 @@ public:
     }
 
     std::pair<iterator,bool> insert(const value_type& val) {
-        if(find(val.first) != end()) {
-            return std::make_pair(find(val.first), false);
-        } else {
-            cout<<"testingA\n";
+        if(sz == 0) {
             Node *newnode = new Node;
             newnode-> data = val;
             newnode-> left = nullptr;
             newnode-> right = nullptr;
-            cout<<"testingB\n";
+            newnode-> parent = nullptr;
+            root = newnode;
+            ++sz;
+            return std::make_pair(iterator(root), true);
+        } else if(find(val.first) != end()) {
+            return std::make_pair(find(val.first), false);
+        } else {
+            cout<<"testingA\n";
+            Node *newnode = new Node;
+            //Node *ndptr = &newnode;
+            newnode-> data = val;
+            newnode-> left = nullptr;
+            newnode-> right = nullptr;
+            newnode-> parent = nullptr;
             Node *prnt = descend(root, val.first);
-            cout<<"testingC\n";
             newnode-> parent = prnt;
             if(newnode-> data.first < prnt-> data.first) {
                 prnt-> left = newnode;
+                ++sz;
                 return std::make_pair(iterator(newnode), true);
             } else {
                 prnt-> right = newnode;
+                ++sz;
                 return std::make_pair(iterator(newnode), true);
             }
         }
