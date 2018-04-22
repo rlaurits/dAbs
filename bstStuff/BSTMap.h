@@ -165,7 +165,8 @@ public:
         sz = 0;
     }
     ~BSTMap() {
-        // TODO
+        clear();
+        delete *root;
     }
     BSTMap(const BSTMap<K,V> &that) {
         // TODO
