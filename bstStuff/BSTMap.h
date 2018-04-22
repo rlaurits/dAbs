@@ -25,18 +25,28 @@ public:
     class iterator {
          
         Node *ptr;
+        Node *iter_root;
 
     public:
         friend class const_iterator;
         friend class BSTMap<K,V>;
-        iterator(Node *nd) {
+        iterator(Node *nd, Node *rt) {
             ptr = nd;
+            iter_root = rt;
         }
         iterator(const iterator &i) { 
             ptr = i.ptr;
+            iter_root = i.iter_root;
         }
-        iterator(const const_iterator citer) {
-            ptr = citer.ptr;
+        iterator(const const_iterator c_iter) {
+            ptr = c_iter.ptr;
+            iter_root = c_iter.iter_root;
+        }
+        // an extra constructor to make an iterator pointing to the root
+        // (so I don't have to type iterator(iter_root, iter_root) when I want that)
+        iterator(Node *rt) {
+            ptr = rt;
+            iter_root = rt;
         }
 
         iterator farLeft() {
@@ -60,15 +70,24 @@ public:
             }
         }
 
-        bool operator==(const iterator &i) const { return ptr == i.ptr; }
+        bool operator==(const iterator &i) const {
+            return (ptr == i.ptr) && (iter_root == i.iter_root);
+        }
         bool operator!=(const iterator &i) const { return !(*this==i); }
         std::pair<K,V> &operator*() { return ptr-> data; }
         //prefix
         iterator &operator++() {
             if(ptr != nullptr) {
-                ptr = ptr-> right;
+                if(ptr-> right != nullptr) {
+                    ptr = ptr-> right;
+                    farLeft();
+                } else {
+                    while(ptr-> parent != nullptr && ptr-> parent-> right == ptr) {
+                        ptr = ptr-> parent;
+                    }
+                    ptr = ptr-> parent;
+                }
             }
-            this-> farLeft();
             return *this;
         }
         iterator &operator--() {
@@ -79,8 +98,12 @@ public:
             }
             if(ptr-> left != nullptr) {
                 ptr = ptr-> left;
+                farRight();
+            } else {
+                while(ptr-> parent != nullptr && ptr-> parent-> left == ptr) {
+                    ptr = ptr-> parent;
+                }
             }
-            this-> farRight();
             return *this;
         }
         //postfix
@@ -98,6 +121,7 @@ public:
 
     class const_iterator {
         Node *ptr;
+        Node *iter_root;
                         
     public:
         friend class BSTMap<K,V>;  // You might not need this in your code, but it helped me.
@@ -167,13 +191,44 @@ public:
     ~BSTMap() {
         clear();
         delete *root;
+<<<<<<< HEAD
+=======
     }
+
+    Node *copySubTree(Node *nd) {
+        Node *newparent = new Node;
+        newparent = nd;
+        insert(nd-> data);
+        Node **ptrptr = insert.first.ptr;
+        ptrptr = newparent;
+        if(nd-> left != nullptr) {
+            //Node *newleft = new Node;
+            //newleft-> parent = ptrptr;
+            //ptrptr-> left = newleft;
+            newleft = copySubTree(nd-> left);
+        }
+        if(nd-> right != nullptr) {
+            Node *newright = new Node;
+            //newright = copySubTree(nd-> right);
+            //newright-> parent = newparent;
+            //newparent-> right = newright;
+            newright = copySubTree(nd-> right);
+        }
+        return newparent;
+>>>>>>> e8073c4c734fb042b83729c3f38acfa49d46875b
+    }
+        
+
     BSTMap(const BSTMap<K,V> &that) {
-        // TODO
+        
+        copySubTree;
+            
+        
     }
 
     BSTMap &operator=(const BSTMap<K,V> &that) {
-        // TODO
+        delete *this;
+        return BSTMap(that);
     }
 
     bool empty() const { return size() == 0; }
@@ -241,7 +296,6 @@ public:
             newnode-> data = val;
             newnode-> left = nullptr;
             newnode-> right = nullptr;
-            newnode-> parent = nullptr;
             Node *prnt = descend(root, val.first);
             newnode-> parent = prnt;
             if(newnode-> data.first < prnt-> data.first) {
@@ -303,11 +357,15 @@ public:
     }
 
     iterator end() {
-        return iterator(root).farRight();
+        iterator iter = iterator(root).farRight();
+        iter.ptr = nullptr;
+        return iter;
     }
 
     const_iterator end() const {
-        return const_iterator(root).farRight();
+        const_iterator c_iter = const_iterator(root).farRight();
+        c_iter.ptr = nullptr;
+        return c_iter;
     }
 
     const_iterator cbegin() const {
@@ -315,7 +373,8 @@ public:
     }
 
     const_iterator cend() const {
-        return const_iterator(root).farRight();
+        const_iterator c_iter = const_iterator(root).farRight();
+        c_iter.ptr = nullptr;
     }
 
 };
