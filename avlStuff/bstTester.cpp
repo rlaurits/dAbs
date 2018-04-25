@@ -1,19 +1,17 @@
-
 #include <iostream>
 #include <cstdio>
-#include "AVLMap.h"
+#include "BSTMapMaybe.h"
 #include <cstdlib>
 using namespace std;
 
 int main() {
     cout<<"testing1\n";
-    AVLMap<char, int> *avl;
-    
+    BSTMap<char, int> *avl;
+
     cout<<"testing2\n";
 
-    //avl-> insert(std::make_pair('f', 36));
-    cout<<avl-> empty()<<endl;
-    //cout<<avl-> size()<<endl;
+    avl-> empty();
+    //bool wah = avl-> empty();
     cout<<"testing3\n";
-
-}
+    
+}    

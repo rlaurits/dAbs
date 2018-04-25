@@ -3,16 +3,15 @@
 using std::make_pair;
 
 template<typename K,typename V>
-class AVLMap {
-    
+class BSTMap {
+    // Define your Node
     struct Node{
     std::pair<K,V> data;
     Node* left;
     Node* right;
     Node* parent;
-    int height;
     };
-    
+    // specify whatever member data you need.
     Node* root=nullptr;
     int sz=0;
 
@@ -47,6 +46,7 @@ public:
     class const_iterator;
 
     class iterator {
+        // TODO: Iterator data. I keep a Node* and a bool that tells me if it is at end.
     Node* node;
     Node* root;
     public:
@@ -100,11 +100,13 @@ public:
     };
 
     class const_iterator {
+        // TODO: iterator data
     Node* node;
     Node* root;
     public:
-        friend class AVLMap<K,V>;
+        friend class BSTMap<K,V>;  // You might not need this in your code, but it helped me.
         const_iterator(Node* r,Node* n=nullptr):node{n},root(r) {  }
+        // TODO: Other constructors as needed.
         const_iterator(const iterator &iter):node{iter.node},root{iter.root} {}
 
         bool operator==(const const_iterator &i) const { return node==i.node; }
@@ -156,16 +158,16 @@ public:
 
 
 
-    AVLMap() {
+    BSTMap() {
     }
-    ~AVLMap() {
+    ~BSTMap() {
     clear();
     }
-    AVLMap(const AVLMap<K,V> &that) {
+    BSTMap(const BSTMap<K,V> &that) {
         for(auto &x:that) insert(x);
     }
 
-    AVLMap &operator=(const AVLMap<K,V> &that) {
+    BSTMap &operator=(const BSTMap<K,V> &that) {
         clear();
     for(auto& x:that)insert(x);
     }
@@ -199,20 +201,20 @@ public:
     }
 
     std::pair<iterator,bool> insert(const value_type& val){
-        Node* ptr = root;
-        Node* parent=nullptr;
-        while(ptr!=nullptr){
-            parent=ptr;
-            if (val.first== ptr->data.first) return std::make_pair(iterator(root,ptr), false);
-            if (val.first<ptr->data.first) ptr=ptr->left;
-            else ptr=ptr->right;
-        }
-        auto newNode=new Node{val, nullptr,nullptr, parent};
-        if (parent==nullptr) root=newNode;
-        else if (newNode->data.first < parent->data.first) parent->left =newNode;
-        else parent->right=newNode;
-        sz++;
-        return std::make_pair(iterator(root,newNode), true);
+    Node* ptr = root;
+    Node* parent=nullptr;
+    while(ptr!=nullptr){
+        parent=ptr;
+        if (val.first== ptr->data.first) return std::make_pair(iterator(root,ptr), false);
+        if (val.first<ptr->data.first) ptr=ptr->left;
+        else ptr=ptr->right;
+    }
+    auto newNode=new Node{val, nullptr,nullptr, parent};
+    if (parent==nullptr) root=newNode;
+    else if (newNode->data.first < parent->data.first) parent->left =newNode;
+    else parent->right=newNode;
+    sz++;
+    return std::make_pair(iterator(root,newNode), true);
     }
 
     template <class InputIterator>
@@ -267,7 +269,7 @@ public:
     return (*i).second;
     }
 
-    bool operator==(const AVLMap<K,V>& rhs) const{
+    bool operator==(const BSTMap<K,V>& rhs) const{
     for (auto i=rhs.begin();i!=rhs.end();++i){
             auto r=find((*i).first);
                 if(r==end() || (*r).second!=(*i).second)return false;
@@ -275,10 +277,9 @@ public:
     return size()==rhs.size();
     }
 
-    bool operator!=(const AVLMap<K,V>& rhs) const{return   ! (*this == rhs);}
+    bool operator!=(const BSTMap<K,V>& rhs) const{return   ! (*this == rhs);}
 
     iterator begin() { return iterator(root,minimum(root)); }
-
 
     const_iterator begin() const { return const_iterator(root,minimum(root)); }
 
