@@ -58,6 +58,7 @@ void updateHeights(Node *nd) {
 void balance(Node *pos) {
     while(pos != nullptr) {
         int diff = pos-> left-> height - pos-> right-> height;
+        //actually, change this so the sign of diff is conserved, do the "break" case at the end
         if(diff < 0) diff = diff*(-1);
         if(diff == 0 || diff == 1) break;
         if(pos-> left-> height > pos-> right-> height) {
