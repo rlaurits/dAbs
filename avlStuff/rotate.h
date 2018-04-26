@@ -1,4 +1,10 @@
 
+//height helper function:
+int h(Node *nd) {
+    if(nd == nullptr) return 0;
+    else return nd-> height;
+}
+
 void rotateLeft(Node *nd) {
     Node *ultraParent = nd-> parent;
     ultraParent-> right = nd-> right;
@@ -21,15 +27,19 @@ void rotateRight(Node *nd) {
 
 void updateHeight(Node *nd) {
     if(nd-> left == nullptr && nd-> right == nullptr) {
-        nd.height = 1;
-    } else if(nd.right == nullptr) {
-        nd.height = nd.left-> height + 1;
-    } else if(nd.left == nullptr) {
-        nd.height = nd.right-> height +1;
+        nd-> height = 1;
+    } else if(nd-> right == nullptr) {
+        nd-> height = nd.left-> height + 1;
+    } else if(nd-> left == nullptr) {
+        nd-> height = nd-> right-> height +1;
     } else {
-        nd.height = max(left.height, right.height) + 1
+        nd-> height = max(left-> height, right-> height) + 1
     }
 }
+void updateHeight2(Node *nd) {
+    nd-> height = max(h(nd-> left), h(nd-> right)) + 1;
+}
+
 void updateAllHeights(Node *pos) {
     while(pos != nullptr) {     
         Node *tmp = pos;
